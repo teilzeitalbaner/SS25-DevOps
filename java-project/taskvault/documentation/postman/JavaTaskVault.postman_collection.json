@@ -1,0 +1,484 @@
+{
+	"info": {
+		"_postman_id": "72f8b072-7845-4f3f-81c4-113eaf319bea",
+		"name": "JavaTaskVault",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "34630579",
+		"_collection_link": "https://solar-moon-734551.postman.co/workspace/New-Team-Workspace~040657f8-ea1d-4953-955f-b69338deff0b/collection/34630579-72f8b072-7845-4f3f-81c4-113eaf319bea?action=share&source=collection_link&creator=34630579"
+	},
+	"item": [
+		{
+			"name": "MainTask",
+			"item": [
+				{
+					"name": "1_createMainTask",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"taskName\": \"Sample Task 1\",\r\n        \"taskDescription\": \"Description of the first task\",\r\n        \"creationDate\": \"15/08/2024\",\r\n        \"dueDate\": \"20/08/2024\",\r\n        \"priority\": \"HIGH_IMPORTANCE\",\r\n        \"subTasks\": [],\r\n        \"dailyTask\": false,\r\n        \"category\": \"Work\",\r\n        \"completed\": false\r\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/mainTasks",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"mainTasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2_createMainTask",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"taskName\": \"Sample Task 2\",\r\n        \"taskDescription\": \"Description of the second task\",\r\n        \"creationDate\": \"16/08/2024\",\r\n        \"dueDate\": \"25/08/2024\",\r\n        \"priority\": \"LOW_IMPORTANCE\",\r\n        \"subTasks\": [],\r\n        \"dailyTask\": true,\r\n        \"category\": \"General\",\r\n        \"completed\": false\r\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/mainTasks",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"mainTasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3_createMainTask",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"taskName\": \"Sample Task 3\",\r\n        \"taskDescription\": \"Description of the third task\",\r\n        \"creationDate\": \"17/08/2024\",\r\n        \"dueDate\": \"26/08/2024\",\r\n        \"priority\": \"AVERAGE_IMPORTANCE\",\r\n        \"subTasks\": [],\r\n        \"dailyTask\": true,\r\n        \"category\": \"General\",\r\n        \"completed\": false\r\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/mainTasks",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"mainTasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getMainTasks",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/mainTasks",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"mainTasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getMainTaskById",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/mainTasks/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"mainTasks",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getMainTasks DueDate Desc",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/mainTasks/sorted?sortCriteria=DUEDATE_MAINTASK_DESC",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"mainTasks",
+								"sorted"
+							],
+							"query": [
+								{
+									"key": "sortCriteria",
+									"value": "DUEDATE_MAINTASK_DESC"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getMainTasks DueDate Asc",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/mainTasks/sorted?sortCriteria=DUEDATE_MAINTASK_ASC",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"mainTasks",
+								"sorted"
+							],
+							"query": [
+								{
+									"key": "sortCriteria",
+									"value": "DUEDATE_MAINTASK_ASC"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getMainTasks Priority Asc",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/mainTasks/sorted?sortCriteria=PRIORITY_MAINTASK_ASC",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"mainTasks",
+								"sorted"
+							],
+							"query": [
+								{
+									"key": "sortCriteria",
+									"value": "PRIORITY_MAINTASK_ASC"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getMainTasks Priority Desc",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/mainTasks/sorted?sortCriteria=PRIORITY_MAINTASK_DESC",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"mainTasks",
+								"sorted"
+							],
+							"query": [
+								{
+									"key": "sortCriteria",
+									"value": "PRIORITY_MAINTASK_DESC"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getMainTasks CreationDate Asc",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/mainTasks/sorted?sortCriteria=CREATIONDATE_MAINTASK_ASC",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"mainTasks",
+								"sorted"
+							],
+							"query": [
+								{
+									"key": "sortCriteria",
+									"value": "CREATIONDATE_MAINTASK_ASC"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getMainTasks CreationDate Desc",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/mainTasks/sorted?sortCriteria=CREATIONDATE_MAINTASK_DESC",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"mainTasks",
+								"sorted"
+							],
+							"query": [
+								{
+									"key": "sortCriteria",
+									"value": "CREATIONDATE_MAINTASK_DESC"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "updateMainTask",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"taskName\": \"Sample Task - updated3\",\r\n    \"taskDescription\": \"Description of the task\",\r\n    \"creationDate\": \"15/08/2024\",\r\n    \"dueDate\": \"20/08/2024\",\r\n    \"priority\": \"HIGH_IMPORTANCE\",\r\n    \"subTasks\": [],\r\n    \"dailyTask\": true, \r\n    \"category\": \"General\",\r\n    \"completed\": false\r\n}\r\n\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/mainTasks/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"mainTasks",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deleteMainTask Copy",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/mainTasks/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"mainTasks",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Category",
+			"item": [
+				{
+					"name": "createCategory",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"categoryName\": \"Work\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/category/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"category",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getCategoryById",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/category/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"category",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getCategories",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/category",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"category"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "createCategory Copy",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"categoryName\": \"Work - update\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/category/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"category",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getCategoryById Copy",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/category/7",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"category",
+								"7"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
