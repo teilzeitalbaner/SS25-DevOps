@@ -31,6 +31,10 @@ class CategoryRepositoryTest {
         EntityManager em = entityManagerFactory.createEntityManager();
         categoryDao = new JpaCategoryDao(em);
         categoryRepository = new CategoryRepository(categoryDao);
+
+    // Clean DB before each test
+    List<Category> categories = (List<Category>) categoryRepository.getAllCategory();
+    categoryDao.delete(categories);
     }
 
     @AfterEach

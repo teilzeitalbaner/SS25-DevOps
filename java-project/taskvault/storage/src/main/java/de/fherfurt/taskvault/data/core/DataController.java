@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 public class DataController {
     private static final Logger LOGGER = Logger.getLogger( DataController.class.getSimpleName() );
 
-    private static final String PERSISTENCE_UNIT_NAME = "taskvault-unit";
+    private static final String PERSISTENCE_UNIT_NAME = System.getProperty("persistenceUnit", "taskvault-unit-test");
 
     private final EntityManagerFactory entityManagerFactory;
     @Getter
