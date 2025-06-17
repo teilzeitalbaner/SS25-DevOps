@@ -29,12 +29,12 @@ public class Mapper {
                 mainTask.getId(),
                 mainTask.getTaskName(),
                 mainTask.getTaskDescription(),
-                mainTask.getCreationDate().format(defaultDateTimeFormatter),
-                mainTask.getDueDate().format(defaultDateTimeFormatter),
-                mainTask.getPriority().name(),
+                mainTask.getCreationDate() != null ? mainTask.getCreationDate().format(defaultDateTimeFormatter) : "No Date",
+                mainTask.getDueDate() != null ? mainTask.getDueDate().format(defaultDateTimeFormatter) : "No Date",
+                mainTask.getPriority() != null ? mainTask.getPriority().name() : "NO_PRIORITY",
                 mainTask.getSubTasks(),
                 mainTask.isDailyTask(),
-                mainTask.getCategory().getCategoryName(),
+                mainTask.getCategory() != null ? mainTask.getCategory().getCategoryName() : "No Category",
                 mainTask.isCompleted()
         );
     }

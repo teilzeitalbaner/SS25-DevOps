@@ -40,7 +40,7 @@ services:
       RUN_MODE: PRODUCTION
       DATABASE_URL: jdbc:postgresql://postgres:5432/taskvault_db
       DATABASE_USER: admin
-      DATABSE_PASSWORD: admin
+      DATABASE_PASSWORD: admin
     ports:
       - "8080:8080"
     depends_on:

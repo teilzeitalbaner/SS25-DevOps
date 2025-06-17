@@ -4,6 +4,7 @@ import de.fherfurt.taskvault.core.Priority;
 import lombok.*;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -25,8 +26,13 @@ import java.util.List;
 public class MainTask extends Task {
 
     private String taskDescription;
+
+    @Column(name="creationdate")
     private LocalDate creationDate;
+    
+    @Column(name="duedate")
     private LocalDate dueDate;
+
     private Priority priority;
     private boolean isDailyTask;
 

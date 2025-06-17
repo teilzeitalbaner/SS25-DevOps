@@ -17,7 +17,7 @@
             <property name="hibernate.connection.url" value="jdbc:h2:mem:taskvault_db;DB_CLOSE_DELAY=-1" />
             <property name="hibernate.connection.user" value="sa" />
             <property name="hibernate.flushMode" value="FLUSH_AUTO" />
-            <property name="hibernate.hbm2ddl.auto" value="create-drop" />
+            <property name="hibernate.hbm2ddl.auto" value="update" />
 
             <property name="hibernate.show_sql" value="true" />
         </properties>
@@ -36,7 +36,7 @@
             <property name="hibernate.connection.user" value="admin" />
             <property name="hibernate.connection.password" value="admin" />
             <property name="hibernate.flushMode" value="FLUSH_AUTO" />
-            <property name="hibernate.hbm2ddl.auto" value="create-drop" />
+            <property name="hibernate.hbm2ddl.auto" value="update" />
 
             <!-- JDBC connection pool (use the built-in) -->
             <property name="connection.pool_size" value="5" />
@@ -61,7 +61,7 @@
             <property name="hibernate.connection.user" value="admin" />
             <property name="hibernate.connection.password" value="admin" />
             <property name="hibernate.flushMode" value="FLUSH_AUTO" />
-            <property name="hibernate.hbm2ddl.auto" value="create-drop" />
+            <property name="hibernate.hbm2ddl.auto" value="update" />
 
             <!-- JDBC connection pool (use the built-in) -->
             <property name="connection.pool_size" value="5" />
