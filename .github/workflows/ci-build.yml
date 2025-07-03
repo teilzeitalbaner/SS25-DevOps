@@ -12,42 +12,47 @@ jobs:
     runs-on: self-hosted
     container: maven:3.9.7-eclipse-temurin-17
 
-    defaults:
-      run:
-        working-directory: java-project/taskvault
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Build and Test (Maven)
         run: mvn -B clean verify
+        working-directory: java-project/taskvault
+
+      - name: List all files after build
+        run: |
+          pwd
+          ls -l java-project/taskvault/api/target || true
+          ls -l java-project/taskvault/api/target/surefire-reports || true
+          ls -l java-project/taskvault/storage/target || true
+          ls -l java-project/taskvault/storage/target/surefire-reports || true
 
       - name: Upload API Test Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: api-test-reports
-          path: api/target/surefire-reports/
+          path: java-project/taskvault/api/target/surefire-reports/
 
       - name: Upload Storage Test Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: storage-test-reports
-          path: storage/target/surefire-reports/
+          path: java-project/taskvault/storage/target/surefire-reports/
 
       - name: Upload API JAR
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: api-jar
-          path: api/target/taskvault-api.jar
+          path: java-project/taskvault/api/target/taskvault-api.jar
 
       - name: Upload Storage JAR
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: storage-jar
-          path: storage/target/storage-1.0-SNAPSHOT.jar
+          path: java-project/taskvault/storage/target/storage-1.0-SNAPSHOT.jar
 
