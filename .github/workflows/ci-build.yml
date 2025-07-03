@@ -49,5 +49,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: storage-jar
-          path: storage/target/storage-*.jar
+          path: storage/target/storage-1.0-SNAPSHOT.jar
 
