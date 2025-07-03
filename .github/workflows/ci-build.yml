@@ -1,0 +1,44 @@
+name: Taskvault CI Build & Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: self-hosted
+
+    defaults:
+      run:
+        working-directory: java-project/taskvault
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build and Test (Maven)
+        run: mvn -B clean verify
+
+      - name: Upload API Test Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-test-reports
+          path: api/target/surefire-reports/
+
+      - name: Upload Storage Test Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: storage-test-reports
+          path: storage/target/surefire-reports/
+
