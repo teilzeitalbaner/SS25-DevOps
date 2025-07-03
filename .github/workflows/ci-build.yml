@@ -10,6 +10,7 @@ on:
 jobs:
   build-and-test:
     runs-on: self-hosted
+    container: maven:3.9.7-eclipse-temurin-17
 
     defaults:
       run:
@@ -18,12 +19,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
 
       - name: Build and Test (Maven)
         run: mvn -B clean verify
@@ -42,3 +37,16 @@ jobs:
           name: storage-test-reports
           path: storage/target/surefire-reports/
 
+      - name: Upload API JAR
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-jar
+          path: api/target/taskvault-api.jar
+
+      - name: Upload Storage JAR
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: storage-jar
+          path: storage/target/storage-*.jar
