@@ -34,6 +34,7 @@ Der aktuelle Workflow **(siehe [.github/workflows/ci-build.yml])** automatisiert
 - [x] **Branch-Strategie nach Best Practice: main, develop, feature/\***  
 - [x] **Pipeline-Status & Artefakte im Actions-Tab sichtbar**
 - [x] **Projektstruktur und CI/CD-Logik an Vorlesungsbeispiele angepasst**
+- [x] **Integration von Linting (z.B. mit Maven Checkstyle Plugin)**
 
 ---
 
@@ -64,8 +65,6 @@ Der aktuelle Workflow **(siehe [.github/workflows/ci-build.yml])** automatisiert
 ---
 
 ## **Nächste Schritte (geplant / optional):**
-
-- [ ] Integration von Linting (z.B. mit Maven Checkstyle Plugin)
 - [ ] Coverage-Reporting (z.B. mit JaCoCo)
 - [ ] Erweiterung auf Docker-Builds/Compose
 - [ ] Deployments, Kubernetes, weitere CI/CD-Features
