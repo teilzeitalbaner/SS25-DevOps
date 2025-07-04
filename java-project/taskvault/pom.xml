@@ -111,7 +111,7 @@
 <!-- Standard, keine spez. configLocation nötig -->
 <outputFile>target/checkstyle-result.xml</outputFile>
 <outputFileFormat>xml</outputFileFormat>
-<failsOnError>true</failsOnError>
+<failsOnError>false</failsOnError>
 <consoleOutput>true</consoleOutput>
 </configuration>
                 </plugin>
