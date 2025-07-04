@@ -27,6 +27,30 @@
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <testSourceDirectory>src/test/java</testSourceDirectory>
+        <plugins>
+                <!-- Checkstyle Plugin for Linting -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>3.3.0</version>
+                    <executions>
+                        <execution>
+                            <id>checkstyle</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>checkstyle</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <!-- Standard, keine spez. configLocation nötig -->
+                        <outputFile>target/checkstyle-result.xml</outputFile>
+                        <outputFileFormat>xml</outputFileFormat>
+                        <failsOnError>false</failsOnError>
+                        <consoleOutput>true</consoleOutput>
+                    </configuration>
+                </plugin>
+        </plugins>
         <pluginManagement>
             <plugins>
                 <!-- Maven Surefire Plugin for Tests -->
@@ -91,29 +115,6 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>3.3.0</version>
-                </plugin>
-
-                <!-- Checkstyle Plugin for Linting -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>3.3.0</version>
-                    <executions>
-                        <execution>
-                            <id>checkstyle</id>
-                            <phase>verify</phase>
-                            <goals>
-                                <goal>checkstyle</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-<configuration>
-<!-- Standard, keine spez. configLocation nötig -->
-<outputFile>target/checkstyle-result.xml</outputFile>
-<outputFileFormat>xml</outputFileFormat>
-<failsOnError>false</failsOnError>
-<consoleOutput>true</consoleOutput>
-</configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
