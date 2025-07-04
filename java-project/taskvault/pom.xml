@@ -104,12 +104,7 @@
                             <phase>verify</phase>
                             <goals>
                                 <goal>checkstyle</goal>
-                            <configuration>
-                                <outputFile>target/checkstyle-result.xml</outputfile>
-                                <outputFileFormat>xml</outputFileFormat>
-                                <failsOnError>true</failsOnError>
                             </goals>
-1                           </configuration>
                         </execution>
                     </executions>
                 </plugin>
