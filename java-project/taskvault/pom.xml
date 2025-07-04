@@ -107,6 +107,13 @@
                             </goals>
                         </execution>
                     </executions>
+<configuration>
+<!-- Standard, keine spez. configLocation nötig -->
+<outputFile>target/checkstyle-result.xml</outputFile>
+<outputFileFormat>xml</outputFileFormat>
+<failsOnError>true</failsOnError>
+<consoleOutput>true</consoleOutput>
+</configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
