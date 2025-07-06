@@ -21,7 +21,7 @@ jobs:
 
       - name: Build and Test (Maven)
         run: mvn -B clean verify
-        #working-directory: java-project/taskvault
+    #working-directory: java-project/taskvault
 
       - name: Upload API Test Reports
         if: always()
@@ -49,20 +49,19 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: storage-jar
-          path: storage/target/storage-1.0-SNAPSHOT.jar
-
+          path: storage/target/storage-*.jar
+          
   lint:
     runs-on: self-hosted
     container: maven:3.9.7-eclipse-temurin-17
 
     defaults:
-        run:
-            working-directory: java-project/taskvault
+      run:
+        working-directory: java-project/taskvault
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
 
       - name: Run Checkstyle (Lint API)
         run: mvn -pl api checkstyle:checkstyle
@@ -74,14 +73,14 @@ jobs:
         run: find . -name "checkstyle-result.xml"
 
       - name: Upload Checkstyle Report (API)
-        if: always()
+        #if: always()
         uses: actions/upload-artifact@v4
         with:
           name: api-lint-report
           path: api/target/checkstyle-result.xml
 
       - name: Upload Checkstyle Report (Storage)
-        if: always()
+        #if: always()
         uses: actions/upload-artifact@v4
         with:
           name: storage-lint-report
@@ -97,3 +96,4 @@ jobs:
       #   with:
       #     name: checkstyle-report
       #     path: java-project/taskvault/target/checkstyle-result.xml
+
