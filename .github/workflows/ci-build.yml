@@ -21,7 +21,6 @@ jobs:
 
       - name: Build and Test (Maven)
         run: mvn -B clean verify
-    #working-directory: java-project/taskvault
 
       - name: Upload API Test Reports
         if: always()
@@ -66,44 +65,25 @@ jobs:
       - name: Clean Maven google-collections cache
         run: rm -rf ~/.m2/repository/com/google/collections
 
-      - name: Clean Maven google-collections cache (root)
-        run: sudo rm -rf /root/.m2/repository/com/google/collections || true
-
-      - name: Remove complete Maven cache (optional)
-        run: rm -rf ~/.m2/repository
-
-
       - name: Run Checkstyle (Lint API)
         run: mvn -pl api checkstyle:checkstyle
 
-      - name: Run Checkstyle (Lint Storage)
-        run: mvn -pl storage checkstyle:checkstyle
-
-      - name: List Checkstyle Files
-        run: find . -name "checkstyle-result.xml"
-
       - name: Upload Checkstyle Report (API)
-        #if: always()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: api-lint-report
           path: api/target/checkstyle-result.xml
 
+      - name: Run Checkstyle (Lint Storage)
+        run: mvn -pl storage checkstyle:checkstyle
+
       - name: Upload Checkstyle Report (Storage)
-        #if: always()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: storage-lint-report
           path: storage/target/checkstyle-result.xml
 
-      # - name: Run Checkstyle (Linting)
-      #   run: mvn checkstyle:checkstyle -Dcheckstyle.config.location=google_checks.xml -Dcheckstyle.output.format=xml
-      #   working-directory: java-project/taskvault
-      #
-      # - name: Upload Checkstyle Report
-      #   if: always()
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: checkstyle-report
-      #     path: java-project/taskvault/target/checkstyle-result.xml
-
+      - name: List Checkstyle Files
+        run: find . -name "checkstyle-result.xml"
