@@ -44,7 +44,7 @@
                 </executions>
                 <configuration>
                     <configLocation>google_checks.xml</configLocation>
-                    <outputFile>{project.build.directory}/checkstyle-result.xml</outputFile>
+                    <outputFile>${project.build.directory}/checkstyle-result.xml</outputFile>
                     <outputFileFormat>xml</outputFileFormat>
                     <failsOnError>false</failsOnError>
                     <consoleOutput>true</consoleOutput>

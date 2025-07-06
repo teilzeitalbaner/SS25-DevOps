@@ -11,13 +11,35 @@ jobs:
   build-and-test:
     runs-on: self-hosted
     container: maven:3.9.7-eclipse-temurin-17
+
+    defaults:
+      run:
+        working-directory: java-project/taskvault
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Build and Test (Maven)
         run: mvn -B clean verify
-        working-directory: java-project/taskvault
+
+      - name: Run Lint (Checkstyle)
+        run: mvn checkstyle:checkstyle
+
+      - name: List Checkstyle Files
+        run: find . -name "checkstyle-result.xml"
+
+      - name: Upload Checkstyle Report (API)
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-lint-report
+          path: java-project/taskvault/api/target/checkstyle-result.xml
+
+      - name: Upload Checkstyle Report (Storage)
+        uses: actions/upload-artifact@v4
+        with:
+          name: storage-lint-report
+          path: java-project/taskvault/storage/target/checkstyle-result.xml
 
       - name: Upload API Test Reports
         if: always()
@@ -45,22 +67,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: storage-jar
-          path: java-project/taskvault/storage/target/storage-1.0-SNAPSHOT.jar
+          path: java-project/taskvault/storage/target/storage-*.jar
 
-  lint:
-    runs-on: self-hosted
-    container: maven:3.9.7-eclipse-temurin-17
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Run Checkstyle (Linting)
-        run: mvn checkstyle:checkstyle -Dcheckstyle.config.location=google_checks.xml -Dcheckstyle.output.format=xml
-        working-directory: java-project/taskvault
-
-      - name: Upload Checkstyle Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: checkstyle-report
-          path: java-project/taskvault/target/checkstyle-result.xml
