@@ -55,7 +55,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Run Checkstyle (Linting)
-        run: mvn checkstyle:checkstyle
+        run: mvn checkstyle:checkstyle -Dcheckstyle.config.location=google_checks.xml -Dcheckstyle.output.format=xml
         working-directory: java-project/taskvault
 
       - name: Upload Checkstyle Report
