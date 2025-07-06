@@ -63,6 +63,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Clean Maven google-collections cache
+        run: rm -rf ~/.m2/repository/com/google/collections
+
       - name: Run Checkstyle (Lint API)
         run: mvn -pl api checkstyle:checkstyle
 
