@@ -66,6 +66,13 @@ jobs:
       - name: Clean Maven google-collections cache
         run: rm -rf ~/.m2/repository/com/google/collections
 
+      - name: Clean Maven google-collections cache (root)
+        run: sudo rm -rf /root/.m2/repository/com/google/collections || true
+
+      - name: Remove complete Maven cache (optional)
+        run: rm -rf ~/.m2/repository
+
+
       - name: Run Checkstyle (Lint API)
         run: mvn -pl api checkstyle:checkstyle
 

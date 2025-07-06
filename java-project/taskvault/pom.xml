@@ -163,6 +163,20 @@
                 <version>${gson.version}</version>
             </dependency>
 
+            <!-- exclude google collections -->
+            <dependency>
+                <groupId>com.google.collections</groupId>
+                <artifactId>google-collections</artifactId>
+                <version>1.0</version>
+                <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <!-- Postgres JDBC Driver -->
             <dependency>
                 <groupId>org.postgresql</groupId>
