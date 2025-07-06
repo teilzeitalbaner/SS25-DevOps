@@ -32,7 +32,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.2.2</version>
                 <executions>
                     <execution>
                         <id>checkstyle</id>
@@ -43,7 +43,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <configLocation>checkstyle-google.xml</configLocation>
+                    <configLocation>google_checks.xml</configLocation>
                     <outputFile>target/checkstyle-result.xml</outputFile>
                     <outputFileFormat>xml</outputFileFormat>
                     <failsOnError>false</failsOnError>
