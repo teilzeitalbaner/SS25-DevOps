@@ -9,15 +9,26 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: self-hosted
-    container: maven:3.9.7-eclipse-temurin-17
-
+    runs-on: ubuntu-latest
     defaults:
         run:
             working-directory: java-project/taskvault
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+
+      - name: Setup Java 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Cache Maven repo
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2-
 
       - name: Build and Test (Maven)
         run: mvn -B clean verify
@@ -51,39 +62,38 @@ jobs:
           path: storage/target/storage-*.jar
           
   lint:
-    runs-on: self-hosted
-    container: maven:3.9.7-eclipse-temurin-17
-
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: java-project/taskvault
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Clean Maven google-collections cache
-        run: rm -rf ~/.m2/repository/com/google/collections
+      - name: Setup Java 17 (Temurin)
+        uses: actions/setup-java@v4
+        with: 
+          distribution: 'temurin'
+          java-version: '17'  
+      - name: Clean Maven repo
+        uses: actions/cache@v4
+        with: 
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2-
 
-      - name: Run Checkstyle (Lint API)
+      - name: Run Checkstyle (API)
         run: mvn -pl api checkstyle:checkstyle
 
-      - name: Upload Checkstyle Report (API)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: api-lint-report
-          path: api/target/checkstyle-result.xml
-
-      - name: Run Checkstyle (Lint Storage)
+      - name: Run Checkstyle (Storage)
         run: mvn -pl storage checkstyle:checkstyle
 
-      - name: Upload Checkstyle Report (Storage)
+      - name: Upload Checkstyle Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: storage-lint-report
-          path: storage/target/checkstyle-result.xml
-
-      - name: List Checkstyle Files
-        run: find . -name "checkstyle-result.xml"
+          name: checkstyle-reports
+          path: |
+            api/target/checkstyle-result.xml
+            storage/target/checkstyle-result.xml
