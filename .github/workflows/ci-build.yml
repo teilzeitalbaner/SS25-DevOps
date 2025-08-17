@@ -23,43 +23,40 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Cache Maven repo
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2-
+          cache: maven
 
       - name: Build and Test (Maven)
-        run: mvn -B clean verify
+        run: mvn -B -ntp clean verify
 
       - name: Upload API Test Reports
         if: always()
+        #if: always() && hashFiles ('api/target/surefire-reports/*') != ''
         uses: actions/upload-artifact@v4
         with:
           name: api-test-reports
-          path: api/target/surefire-reports/
+          path: java-project/taskvault/api/target/surefire-reports/
 
       - name: Upload Storage Test Reports
         if: always()
+        #if: always() && hashFiles ('storage/target/surefire-reports/*') != ''
         uses: actions/upload-artifact@v4
         with:
           name: storage-test-reports
-          path: storage/target/surefire-reports/
+          path: java-project/taskvault/storage/target/surefire-reports/
 
       - name: Upload API JAR
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: api-jar
-          path: api/target/taskvault-api.jar
+          path: java-project/taskvault/api/target/taskvault-api.jar
 
       - name: Upload Storage JAR
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: storage-jar
-          path: storage/target/storage-*.jar
+          path: java-project/taskvault/storage/target/storage-*.jar
           
   lint:
     runs-on: ubuntu-latest
@@ -91,14 +88,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: api-lint-report
-          path: api/target/checkstyle-result.xml
+          path: java-project/taskvault/api/target/checkstyle-result.xml
 
       - name: Upload Checkstyle Reports (Storage)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: storage-lint-report
-          path: storage/target/checkstyle-result.xml
+          path: java-project/taskvault/storage/target/checkstyle-result.xml
 
       - name: List Checkstyle Files
         if: always()
