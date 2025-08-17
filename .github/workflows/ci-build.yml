@@ -76,24 +76,30 @@ jobs:
         with: 
           distribution: 'temurin'
           java-version: '17'  
-      - name: Clean Maven repo
-        uses: actions/cache@v4
-        with: 
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2-
+          cache: maven
 
+      - name: Pre-install modules (no tests)
+        run: mvn -B -ntp -DskipTests -Djacoco.skip=true install
       - name: Run Checkstyle (API)
-        run: mvn -pl api checkstyle:checkstyle
+        run: mvn -B -ntp -pl api -DskipTests checkstyle:checkstyle
 
       - name: Run Checkstyle (Storage)
-        run: mvn -pl storage checkstyle:checkstyle
+        run: mvn -B -ntp -pl storage -DskipTests checkstyle:checkstyle
 
-      - name: Upload Checkstyle Reports
+      - name: Upload Checkstyle Reports (API)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: checkstyle-reports
-          path: |
-            api/target/checkstyle-result.xml
-            storage/target/checkstyle-result.xml
+          name: api-lint-report
+          path: api/target/checkstyle-result.xml
+
+      - name: Upload Checkstyle Reports (Storage)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: storage-lint-report
+          path: storage/target/checkstyle-result.xml
+
+      - name: List Checkstyle Files
+        if: always()
+        run: find . -name "checkstyle-result.xml"
