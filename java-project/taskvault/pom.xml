@@ -21,7 +21,7 @@
         <lombok.version>1.18.30</lombok.version>
         <gson.version>2.10.1</gson.version> <!-- todo: von Xander nicht benutzt -->
         <jersey.version>3.1.7</jersey.version>
-        <slf4j.version>1.7.36</slf4j.version>
+        <slf4j.version>2.0.13</slf4j.version>
     </properties>
 
     <build>
@@ -245,6 +245,11 @@
                 <version>${jersey.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.glassfish.jersey.jaxb</groupId>
+                <artifactId>jersey-runtime</artifactId>
+                <version>4.0.5</version>
+            </dependency>
             <!-- Need this to hide warning for jakarta.activation.DataSource -->
             <dependency>
                 <groupId>jakarta.activation</groupId>

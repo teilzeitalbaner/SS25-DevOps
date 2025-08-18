@@ -48,7 +48,8 @@
                         </goals>
                         <configuration>
                             <!-- exclude junit, we need runtime dependency only -->
-                            <includeScope>runtime</includeScope>
+                            <!-- <includeScope>runtime</includeScope> -->
+    
                             <outputDirectory>${project.build.directory}/lib/</outputDirectory>
                         </configuration>
                     </execution>

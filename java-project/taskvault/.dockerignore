@@ -1,0 +1,21 @@
+# Maven & IDE
+target/
+**/target/
+.mvn/
+.settings/
+.project
+.classpath
+.idea/
+*.iml
+
+# VCS & OS
+.git/
+.gitignore
+.DS_Store
+
+# Docs/Artefakte
+documentation/
+*.pptx
+*.pdf
+*.drawio
+postman/

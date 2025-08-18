@@ -9,17 +9,35 @@ import javax.persistence.Persistence;
 import java.util.logging.Logger;
 
 /**
- * The DataController class is a singleton responsible for managing the creation and provision
- * of repositories and DAOs (Data Access Objects) in the application. It sets up the
- * EntityManagerFactory, initializes repositories, and ensures that the same instance of
+ * The DataController class is a singleton responsible for managing the creation
+ * and provision
+ * of repositories and DAOs (Data Access Objects) in the application. It sets up
+ * the
+ * EntityManagerFactory, initializes repositories, and ensures that the same
+ * instance of
  * the DataController is used throughout the application.
  */
 public class DataController {
-    private static final Logger LOGGER = Logger.getLogger( DataController.class.getSimpleName() );
+    private static final Logger LOGGER = Logger.getLogger(DataController.class.getSimpleName());
+    private static final String PERSISTENCE_UNIT_NAME = resolvePersistenceUnit();
 
-    private static final String PERSISTENCE_UNIT_NAME = System.getProperty("persistenceUnit", "taskvault-unit-test");
+    private static String resolvePersistenceUnit() {
+        String env = System.getenv("PERSISTENCE_UNIT");
+        if (env != null && !env.isBlank()) {
+            LOGGER.info("Using persistence unit (from ENV): " + env);
+            return env;
+        }
+        String prop = System.getProperty("persistenceUnit");
+        if (prop != null && !prop.isBlank()) {
+            LOGGER.info("Using persistence unit (from System Property): " + prop);
+            return prop;
+        }
+        LOGGER.info("Using persistence unit (default): taskvault-unit");
+        return "taskvault-unit";
+    }
 
     private final EntityManagerFactory entityManagerFactory;
+
     @Getter
     private final IMainTaskRepository mainTaskRepository;
     @Getter
@@ -28,7 +46,7 @@ public class DataController {
     private final ICategoryRepository categoryRepository;
 
     private static DataController INSTANCE;
-
+    
     /**
      * Returns the singleton instance of the DataController.
      * If the instance does not exist, it is created.
@@ -36,7 +54,7 @@ public class DataController {
      * @return the singleton instance of DataController
      */
     public static DataController getInstance() {
-        if( INSTANCE == null ) {
+        if (INSTANCE == null) {
             INSTANCE = new DataController();
         }
         return INSTANCE;
@@ -46,21 +64,18 @@ public class DataController {
      * Private constructor to prevent instantiation from outside.
      * Initializes the EntityManagerFactory and creates the repositories.
      */
+
     private DataController() {
-        LOGGER.info( "Init Data Controller" );
-        String runMode = System.getenv("RUN_MODE");
+        LOGGER.info("Init Data Controller");
 
-        // Prepare Entity Manager Factory
-        this.entityManagerFactory = Persistence.createEntityManagerFactory( PERSISTENCE_UNIT_NAME );
+        this.entityManagerFactory = Persistence.createEntityManagerFactory(PERSISTENCE_UNIT_NAME);
 
-        // Create Repository
-        LOGGER.info( "Create RepositoryImpl" );
-        this.mainTaskRepository = new MainTaskRepository( this.getMainTaskDao(), null);
-        this.taskRepository = new TaskRepository( this.getTaskDao() );
-        this.categoryRepository = new CategoryRepository ( this.getCategoryDao() );
+        LOGGER.info("Create RepositoryImpl");
+        this.mainTaskRepository = new MainTaskRepository(this.getMainTaskDao(), null);
+        this.taskRepository = new TaskRepository(this.getTaskDao());
+        this.categoryRepository = new CategoryRepository(this.getCategoryDao());
 
-        // Create Test Data
-        LOGGER.info( "Create Test Data" );
+        LOGGER.info("Create Test Data");
     }
 
     /**
@@ -68,8 +83,8 @@ public class DataController {
      *
      * @return a new JpaMainTaskDao instance
      */
-    public IMainTaskDao getMainTaskDao(){
-        return new JpaMainTaskDao( this.entityManagerFactory.createEntityManager() );
+    public IMainTaskDao getMainTaskDao() {
+        return new JpaMainTaskDao(this.entityManagerFactory.createEntityManager());
     }
 
     /**
@@ -77,12 +92,12 @@ public class DataController {
      *
      * @return a new JpaTaskDao instance
      */
-    public ITaskDao getTaskDao(){
-        return new JpaTaskDao( this.entityManagerFactory.createEntityManager() );
+    public ITaskDao getTaskDao() {
+        return new JpaTaskDao(this.entityManagerFactory.createEntityManager());
     }
 
-    public ICategoryDao getCategoryDao(){
-        return new JpaCategoryDao( this.entityManagerFactory.createEntityManager() );
+    public ICategoryDao getCategoryDao() {
+        return new JpaCategoryDao(this.entityManagerFactory.createEntityManager());
     }
 
 }
