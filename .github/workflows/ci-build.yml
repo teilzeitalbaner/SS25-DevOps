@@ -26,8 +26,7 @@ jobs:
           cache: maven
 
       - name: Build and Test (Maven)
-        run: mvn -B -ntp clean verify
-
+        run: mvn -B -ntp -DpersistenceUnit=taskvault-unit-test clean verify
       - name: Upload API Test Reports
         if: always()
         #if: always() && hashFiles ('api/target/surefire-reports/*') != ''
@@ -130,7 +129,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
-          mvn -B -ntp verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.host.url="${SONAR_HOST_URL}" \
-            -Dsonar.projectKey=DevOps-SS25-taskvault \
-            -Dsonar.projectName="DevOps-SS25-taskvault"
+          mvn -B -ntp -DpersistenceUnit=taskvault-unit-test verify \
+          org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.host.url="${SONAR_HOST_URL}" \
+          -Dsonar.projectKey=DevOps-SS25-taskvault \
+          -Dsonar.projectName="DevOps-SS25-taskvault"
