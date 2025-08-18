@@ -100,3 +100,37 @@ jobs:
       - name: List Checkstyle Files
         if: always()
         run: find . -name "checkstyle-result.xml"
+
+  sonar: 
+    name: SonarQube Analysis
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: java-project/taskvault
+    steps:
+      - name: Checkout code (full history for blame)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Java 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      - name: Cache Sonar scanner packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - name: Build and Analyze with SonarQube
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          mvn -B -ntp verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -Dsonar.host.url="${SONAR_HOST_URL}" \
+            -Dsonar.projectKey=DevOps-SS25-taskvault \
+            -Dsonar.projectName="DevOps-SS25-taskvault"
