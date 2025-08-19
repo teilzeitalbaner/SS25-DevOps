@@ -54,3 +54,11 @@ jobs:
             ghcr.io/${{ steps.owner.outputs.owner_lc }}/taskvault-api:latest
             ghcr.io/${{ steps.owner.outputs.owner_lc }}/taskvault-api:${{ steps.meta.outputs.run_tag }}
             ghcr.io/${{ steps.owner.outputs.owner_lc }}/taskvault-api:${{ steps.meta.outputs.short_sha }}
+
+
+      - name: Show pushed manifests
+        run: |
+          echo "short: ${{ steps.meta.outputs.short_sha }}"
+          echo "run:   ${{ steps.meta.outputs.run_tag }}"
+          docker buildx imagetools inspect ghcr.io/${{ steps.owner.outputs.owner_lc }}/taskvault-api:${{ steps.meta.outputs.short_sha }} || true
+          docker buildx imagetools inspect ghcr.io/${{ steps.owner.outputs.owner_lc }}/taskvault-api:${{ steps.meta.outputs.run_tag }} || true
