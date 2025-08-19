@@ -1,8 +1,9 @@
 name: Taskvault CD (Compose on Runner)
 
 on:
+  # ⚠️ WICHTIG: CD startet NACH erfolgreichem Image-Publish
   workflow_run:
-    workflows: ["Taskvault CI Build & Test"]
+    workflows: ["Publish Docker image (GHCR)"]
     types: [completed]
 
 permissions:
@@ -16,6 +17,7 @@ jobs:
     defaults:
       run:
         working-directory: java-project/taskvault
+
     env:
       CI_SHA: ${{ github.event.workflow_run.head_sha }}
 
@@ -25,29 +27,48 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Prepare env (owner lc + short sha)
+      - name: Compute owner + tags (short SHA + run number)
         id: meta
         run: |
           echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
-          SHORT_SHA="${CI_SHA::7}"
-          echo "IMAGE_TAG=${SHORT_SHA}" >> $GITHUB_ENV
-          echo "Resolved tag: ${SHORT_SHA}"
+          echo "SHORT_SHA=${CI_SHA:0:7}" >> $GITHUB_ENV
+          # ACHTUNG: Das ist die Run-Number des Publish-Workflows (cd-image.yml)
+          echo "RUN_TAG=${{ github.event.workflow_run.run_number }}" >> $GITHUB_ENV
+          echo "Resolved tags: SHORT_SHA=${CI_SHA:0:7}, RUN_TAG=${{ github.event.workflow_run.run_number }}"
 
-      - name: Login to GHCR
+      - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Pull API image by short SHA
-        run: docker pull ghcr.io/${OWNER_LC}/taskvault-api:${IMAGE_TAG}
+      - name: Pull API image (try short sha, then run number; retry ~3 min)
+        run: |
+          set +e
+          for i in {1..18}; do   # 18 * 10s ≈ 3 Minuten
+          echo "Try #$i: pull short-sha ghcr.io/${OWNER_LC}/taskvault-api:${SHORT_SHA}"
+          docker pull ghcr.io/${OWNER_LC}/taskvault-api:${SHORT_SHA} && \
+          echo "IMAGE_TAG=${SHORT_SHA}" >> $GITHUB_ENV && exit 0
+
+          echo "Not there; try run-number ghcr.io/${OWNER_LC}/taskvault-api:${RUN_TAG}"
+          docker pull ghcr.io/${OWNER_LC}/taskvault-api:${RUN_TAG} && \
+          echo "IMAGE_TAG=${RUN_TAG}" >> $GITHUB_ENV && exit 0
+
+          echo "Still not published. Waiting 10s…"
+          sleep 10
+          done
+          echo "Image tag not found after retries."
+          exit 1
+
+      - name: Chosen image tag
+        run: echo "Using IMAGE_TAG=${IMAGE_TAG} (owner=${OWNER_LC})"
+
+      - name: Compose Pull (with selected tag)
+        run: docker compose -f docker-compose.ci.yml pull
 
       - name: Compose Up (detached)
-        run: |
-          export OWNER_LC="${OWNER_LC}"
-          export IMAGE_TAG="${IMAGE_TAG}"
-          docker compose -f docker-compose.ci.yml up -d
+        run: docker compose -f docker-compose.ci.yml up -d
 
       - name: Wait for API (HTTP 200)
         run: |
@@ -61,6 +82,10 @@ jobs:
           echo "API not ready"
           docker compose -f docker-compose.ci.yml logs api postgres || true
           exit 1
+
+      - name: Dump logs on failure
+        if: failure()
+        run: docker compose -f docker-compose.ci.yml logs --no-color || true
 
       - name: Compose Down (cleanup)
         if: always()

@@ -2,7 +2,7 @@ name: Publish Docker image (GHCR)
 
 on:
   workflow_run:
-    workflows: ["Taskvault CI Build & Test"]   # exakter CI-Name
+    workflows: ["Taskvault CI Build & Test"]
     types: [completed]
 
 permissions:
@@ -18,18 +18,21 @@ jobs:
         working-directory: java-project/taskvault
 
     steps:
-      - name: Checkout source at CI commit
+      - name: Checkout source at the commit that triggered CI
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
 
-      - name: Compute tags (owner lc + short sha)
+      - name: Prepare lowercase owner for GHCR
+        id: owner
+        run: echo "lc=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Compute SHORT_SHA and RUN_TAG
         id: meta
         run: |
-          echo "owner_lc=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
-          CI_SHA="${{ github.event.workflow_run.head_sha }}"
-          SHORT_SHA="${CI_SHA::7}"
-          echo "short_sha=${SHORT_SHA}" >> $GITHUB_OUTPUT
+          short_sha="${{ github.event.workflow_run.head_sha }}"
+          echo "short_sha=$(echo $short_sha | cut -c1-7)" >> "$GITHUB_OUTPUT"
+          echo "run_tag=${{ github.run_number }}" >> "$GITHUB_OUTPUT"
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -38,12 +41,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build & Push (latest + sha)
+      - name: Build & Push (latest + run number + short sha)
         uses: docker/build-push-action@v6
         with:
-          context: ./java-project/taskvault
-          file: ./java-project/taskvault/Dockerfile
+          context: .
+          file: Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ steps.meta.outputs.owner_lc }}/taskvault-api:latest
-            ghcr.io/${{ steps.meta.outputs.owner_lc }}/taskvault-api:${{ steps.meta.outputs.short_sha }}
+            ghcr.io/${{ steps.owner.outputs.lc }}/taskvault-api:latest
+            ghcr.io/${{ steps.owner.outputs.lc }}/taskvault-api:${{ steps.meta.outputs.run_tag }}
+            ghcr.io/${{ steps.owner.outputs.lc }}/taskvault-api:${{ steps.meta.outputs.short_sha }}
+
+      - name: Show pushed manifest(s)
+        run: |
+          echo "short: ${{ steps.meta.outputs.short_sha }}"
+          echo "run:   ${{ steps.meta.outputs.run_tag }}"
+          docker buildx imagetools inspect ghcr.io/${{ steps.owner.outputs.lc }}/taskvault-api:${{ steps.meta.outputs.short_sha }} || true
+          docker buildx imagetools inspect ghcr.io/${{ steps.owner.outputs.lc }}/taskvault-api:${{ steps.meta.outputs.run_tag }} || true
