@@ -2,44 +2,40 @@ name: Taskvault CD (Compose on Runner)
 
 on:
   workflow_run:
-    workflows: ["Taskvault CI Build & Test"]   # exakter Name deines CI-Workflows
+    workflows: ["Taskvault CI Build & Test"]
     types: [completed]
 
 permissions:
   contents: read
   packages: read
 
-# verhindert parallele CD-Läufe, die sich in die Quere kommen
-concurrency:
-  group: cd-deploy
-  cancel-in-progress: true
-
 jobs:
   deploy-on-runner:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-
     defaults:
       run:
         working-directory: java-project/taskvault
 
-    # → diese Variablen liest docker-compose.ci.yml
-    env:
-      IMAGE_TAG: ${{ github.event.workflow_run.run_number }}
-      OWNER: ${{ github.repository_owner }}
     steps:
       - name: Checkout (compose file & docs)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Log in to GHCR
+      - name: Export env for compose (lowercase owner + CI run tag)
+        run: |
+          echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+          echo "IMAGE_TAG=${{ github.event.workflow_run.run_number }}" >> $GITHUB_ENV
+
+      - name: Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # ---- FIX: kein --pull available -> zweistufig
       - name: Compose pull images
         run: docker compose -f docker-compose.ci.yml pull
 

@@ -2,10 +2,8 @@ name: Publish Docker image (GHCR)
 
 on:
   workflow_run:
-    workflows: ["Taskvault CI Build & Test"]
+    workflows: ["Taskvault CI Build & Test"]   # exakter CI-Name
     types: [completed]
-    branches: [main]
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -13,24 +11,27 @@ permissions:
 
 jobs:
   docker-publish:
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: java-project/taskvault
-    steps:
-      - name: Debug upstream info
-        run: |
-          echo "event:        ${{ github.event_name }}"
-          echo "upstream:     ${{ github.event.workflow_run.name }}"
-          echo "conclusion:   ${{ github.event.workflow_run.conclusion }}"
-          echo "head_sha:     ${{ github.event.workflow_run.head_sha }}"
-          echo "repo owner:   ${{ github.repository_owner }}"
 
-      - name: Checkout source
+    steps:
+      - name: Checkout source at the commit that triggered CI
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Set tags (lowercase owner)
+        id: tags
+        shell: bash
+        run: |
+          OWNER="${GITHUB_REPOSITORY_OWNER,,}"
+          IMAGE="ghcr.io/${OWNER}/taskvault-api"
+
+          # Standard: latest + Run-Nummer
+          TAGS="${IMAGE}:latest,${IMAGE}:${{ github.run_number }}"
+
+          echo "list=${TAGS}" >> "$GITHUB_OUTPUT"
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -39,18 +40,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set tags
-        id: tags
-        run: |
-          OWNER="${GITHUB_REPOSITORY_OWNER,,}"     # <-- lowercase
-          IMAGE="ghcr.io/${OWNER}/taskvault-api"
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-          echo "list=${IMAGE}:rc-${{ github.run_number }}" >> "$GITHUB_OUTPUT"
-          else
-          echo "list=${IMAGE}:latest,${IMAGE}:${{ github.run_number }}" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Build & Push
+      # >>> WICHTIG: explizite Pfade setzen
+      - name: Build & Push (latest + run number)
         uses: docker/build-push-action@v6
         with:
           context: ./java-project/taskvault
