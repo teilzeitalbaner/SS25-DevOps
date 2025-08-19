@@ -2,13 +2,13 @@ name: Taskvault CI Build & Test
 
 on:
   push:
-    branches: [main, develop, feature/*]
-  pull_request:
     branches: [main, develop]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+    group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
