@@ -5,7 +5,9 @@ on:
     workflows: ["Taskvault CI Build & Test"]
     types: [completed]
 concurrency:
-  group: publish-${{ github.event.workflow_run.head_branch }}
+  #group: publish-${{ github.event.workflow_run.head_branch }}
+  group: publish-${{ github.workflow }}-${{ github.ref }}
+
   cancel-in-progress: true
 permissions:
   contents: read
