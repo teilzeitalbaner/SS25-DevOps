@@ -9,6 +9,11 @@ permissions:
   contents: read
   packages: read
 
+# verhindert parallele CD-Läufe, die sich in die Quere kommen
+concurrency:
+  group: cd-deploy
+  cancel-in-progress: true
+
 jobs:
   deploy-on-runner:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
@@ -18,17 +23,15 @@ jobs:
       run:
         working-directory: java-project/taskvault
 
+    # → diese Variablen liest docker-compose.ci.yml
     env:
       IMAGE_TAG: ${{ github.event.workflow_run.run_number }}
-
+      OWNER: ${{ github.repository_owner }}
     steps:
       - name: Checkout (compose file & docs)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Lowercase OWNER for GHCR
-        run: echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -37,14 +40,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Pull API image (tag from CI run)
-        run: docker pull ghcr.io/${{ env.OWNER_LC }}/taskvault-api:${{ env.IMAGE_TAG }}
-
-      - name: Compose Up (detached)
+      # Kein separater 'docker pull' Step nötig – wir ziehen beim Up
+      - name: Compose Up (detached, always pull latest tag)
         run: |
-          export OWNER_LC="${OWNER_LC}"
-          export IMAGE_TAG="${IMAGE_TAG}"
-          docker compose -f docker-compose.ci.yml up -d
+          docker compose --pull always -f docker-compose.ci.yml up -d
 
       - name: Wait for API (HTTP 200)
         run: |
