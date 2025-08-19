@@ -76,6 +76,9 @@ jobs:
           docker compose -f docker-compose.ci.yml logs api postgres || true
           exit 1
 
+      - name: Dump logs on failure
+        if: failure()
+        run: docker compose -f docker-compose.ci.yml logs --no-color
       - name: Compose Down (cleanup)
         if: always()
         run: docker compose -f docker-compose.ci.yml down -v
