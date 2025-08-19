@@ -2,15 +2,8 @@ name: Publish Docker image (GHCR)
 
 on:
   workflow_run:
-    workflows: ["Taskvault CI Build & Test"]   # exakter Name deines CI-Workflows
+    workflows: ["Taskvault CI Build & Test"]   # exakter CI-Name
     types: [completed]
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: "Optionaler Release-Tag (z.B. v1.0.0)"
-        required: false
-        type: string
-        default: ""
 
 permissions:
   contents: read
@@ -18,20 +11,27 @@ permissions:
 
 jobs:
   docker-publish:
-    # bei workflow_run nur auf success, bei workflow_dispatch immer (du entscheidest ja manuell)
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: java-project/taskvault
-
     steps:
-      - name: Checkout source
+      - name: Checkout source at the commit that triggered CI
         uses: actions/checkout@v4
         with:
-          # falls workflow_run: am Commit der CI laufen
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Set tags (lowercase owner)
+        id: tags
+        shell: bash
+        run: |
+          OWNER="${GITHUB_REPOSITORY_OWNER,,}"
+          IMAGE="ghcr.io/${OWNER}/taskvault-api"
+
+          # Standard: latest + Run-Nummer
+          TAGS="${IMAGE}:latest,${IMAGE}:${{ github.run_number }}"
+
+          echo "list=${TAGS}" >> "$GITHUB_OUTPUT"
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -40,24 +40,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # >>> WICHTIG: explizite Pfade setzen
       - name: Build & Push (latest + run number)
-        id: build
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: Dockerfile
+          context: ./java-project/taskvault
+          file: ./java-project/taskvault/Dockerfile
           push: true
-          tags: |
-            ghcr.io/${{ github.repository_owner }}/taskvault-api:latest
-            ghcr.io/${{ github.repository_owner }}/taskvault-api:${{ github.run_number }}
-
-      - name: (Optional) Add release tag without rebuild
-        if: ${{ github.event.inputs.tag != '' }}
-        run: |
-          OWNER="${{ github.repository_owner }}"
-          TAG="${{ github.event.inputs.tag }}"
-          DIGEST="${{ steps.build.outputs.digest }}"
-          echo "Tagging digest ${DIGEST} as ghcr.io/${OWNER}/taskvault-api:${TAG}"
-          docker buildx imagetools create \
-            -t ghcr.io/${OWNER}/taskvault-api:${TAG} \
-            "${DIGEST}"
+          tags: ${{ steps.tags.outputs.list }}
