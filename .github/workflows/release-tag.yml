@@ -1,0 +1,131 @@
+name: Taskvault Release Tagging
+
+# >>> Auskommentierter CRON-Trigger (bei Bedarf einkommentieren)
+# on:
+#   schedule:
+#     - cron: "0 3 * * 0"  # jeden Sonntag 03:00 UTC
+#   workflow_dispatch:
+#     inputs:
+#       version:
+#         description: "Release version (e.g. v1.0.0)"
+#         required: true
+#         type: string
+#       source_image_tag:
+#         description: "Source image tag to retag from (default: latest)"
+#         required: false
+#         type: string
+#         default: "latest"
+#       target_ref:
+#         description: "Ref/branch to tag & release (default: main)"
+#         required: false
+#         type: string
+#         default: "main"
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g. v1.0.0)"
+        required: true
+        type: string
+      source_image_tag:
+        description: "Source image tag to retag from (default: latest)"
+        required: false
+        type: string
+        default: "latest"
+      target_ref:
+        description: "Ref/branch to tag & release (default: main)"
+        required: false
+        type: string
+        default: "main"
+
+permissions:
+  contents: write   # für Tag + Release
+  packages: write   # für GHCR push
+
+concurrency:
+  group: release-${{ github.ref || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Create tag, GitHub release & GHCR retag
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: java-project/taskvault
+
+    env:
+      VERSION: ${{ github.event.inputs.version }}
+      SOURCE_TAG: ${{ github.event.inputs.source_image_tag }}
+      TARGET_REF: ${{ github.event.inputs.target_ref }}
+
+    steps:
+      - name: Checkout target ref (full history)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_REF }}
+          fetch-depth: 0
+
+      - name: Validate version format (must start with 'v')
+        run: |
+          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Expected SemVer like v1.2.3"; exit 1
+          fi
+
+      - name: Create annotated git tag
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # fail if tag exists
+          if git rev-parse "$VERSION" >/dev/null 2>&1; then
+            echo "Tag $VERSION already exists"; exit 1
+          fi
+          git tag -a "$VERSION" -m "Release $VERSION"
+          git push origin "$VERSION"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.VERSION }}
+          name: ${{ env.VERSION }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+
+      - name: Prepare lowercase owner for GHCR
+        id: owner
+        run: |
+          echo "lc=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull image to retag
+        run: |
+          docker pull ghcr.io/${{ steps.owner.outputs.lc }}/taskvault-api:${SOURCE_TAG}
+
+      - name: Retag & push image as release version
+        run: |
+          docker tag ghcr.io/${{ steps.owner.outputs.lc }}/taskvault-api:${SOURCE_TAG} \
+                     ghcr.io/${{ steps.owner.outputs.lc }}/taskvault-api:${VERSION}
+          docker push ghcr.io/${{ steps.owner.outputs.lc }}/taskvault-api:${VERSION}
+
+      # Optional: zusätzlich "major" und "minor" Floating-Tags pflegen
+      - name: (Optional) Push major/minor tags
+        if: ${{ always() }}
+        run: |
+          MAJOR=$(echo "$VERSION" | sed -E 's/^v([0-9]+)\..*$/\1/')
+          MINOR=$(echo "$VERSION" | sed -E 's/^v[0-9]+\.([0-9]+)\..*$/\1/')
+          if [[ -n "$MAJOR" && -n "$MINOR" ]]; then
+            docker tag ghcr.io/${{ steps.owner.outputs.lc }}/taskvault-api:${VERSION} \
+                       ghcr.io/${{ steps.owner.outputs.lc }}/taskvault-api:v${MAJOR}
+            docker tag ghcr.io/${{ steps.owner.outputs.lc }}/taskvault-api:${VERSION} \
+                       ghcr.io/${{ steps.owner.outputs.lc }}/taskvault-api:v${MAJOR}.${MINOR}
+            docker push ghcr.io/${{ steps.owner.outputs.lc }}/taskvault-api:v${MAJOR} || true
+            docker push ghcr.io/${{ steps.owner.outputs.lc }}/taskvault-api:v${MAJOR}.${MINOR} || true
+          fi
