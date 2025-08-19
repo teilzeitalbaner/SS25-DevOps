@@ -1,8 +1,9 @@
 name: Taskvault CD (Compose on Runner)
 
 on:
+  # ⚠️ WICHTIG: CD startet NACH erfolgreichem Image-Publish
   workflow_run:
-    workflows: ["Taskvault CI Build & Test"]
+    workflows: ["Publish Docker image (GHCR)"]
     types: [completed]
 
 permissions:
@@ -16,6 +17,7 @@ jobs:
     defaults:
       run:
         working-directory: java-project/taskvault
+
     env:
       CI_SHA: ${{ github.event.workflow_run.head_sha }}
 
@@ -29,9 +31,10 @@ jobs:
         id: meta
         run: |
           echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
-          echo "SHORT_SHA=${CI_SHA:0:7}"                >> $GITHUB_ENV
+          echo "SHORT_SHA=${CI_SHA:0:7}" >> $GITHUB_ENV
+          # ACHTUNG: Das ist die Run-Number des Publish-Workflows (cd-image.yml)
           echo "RUN_TAG=${{ github.event.workflow_run.run_number }}" >> $GITHUB_ENV
-          echo "Resolved short tag: ${CI_SHA:0:7}"
+          echo "Resolved tags: SHORT_SHA=${CI_SHA:0:7}, RUN_TAG=${{ github.event.workflow_run.run_number }}"
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -40,23 +43,25 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Pull API image (try short sha, fallback run number)
+      - name: Pull API image (try short sha, fallback run number, with retries)
         run: |
-          set -e
-          echo "Trying: ghcr.io/${OWNER_LC}/taskvault-api:${SHORT_SHA}"
-          if docker pull ghcr.io/${OWNER_LC}/taskvault-api:${SHORT_SHA}; then
-            echo "IMAGE_TAG=${SHORT_SHA}" >> $GITHUB_ENV
-          else
-            echo "Short-sha not found; trying run-number tag: ${RUN_TAG}"
-            docker pull ghcr.io/${OWNER_LC}/taskvault-api:${RUN_TAG}
-            echo "IMAGE_TAG=${RUN_TAG}" >> $GITHUB_ENV
-          fi
+          set +e
+          for i in {1..10}; do
+            echo "Try #$i: pull short-sha tag ghcr.io/${OWNER_LC}/taskvault-api:${SHORT_SHA}"
+            docker pull ghcr.io/${OWNER_LC}/taskvault-api:${SHORT_SHA} && \
+              echo "IMAGE_TAG=${SHORT_SHA}" >> $GITHUB_ENV && exit 0
+            echo "Short-sha not ready; try run-number tag ghcr.io/${OWNER_LC}/taskvault-api:${RUN_TAG}"
+            docker pull ghcr.io/${OWNER_LC}/taskvault-api:${RUN_TAG} && \
+              echo "IMAGE_TAG=${RUN_TAG}" >> $GITHUB_ENV && exit 0
+            echo "Not found yet. Waiting 6s…"
+            sleep 6
+          done
+          echo "Image tag not found after retries."
+          exit 1
 
       - name: Chosen image tag
         run: echo "Using IMAGE_TAG=${IMAGE_TAG} (owner=${OWNER_LC})"
 
-      # Nach Setzen von OWNER_LC/IMAGE_TAG einmal explizit pullen,
-      # damit compose garantiert mit den korrekten Env-Vars arbeitet.
       - name: Compose Pull (with selected tag)
         run: docker compose -f docker-compose.ci.yml pull
 
@@ -78,7 +83,8 @@ jobs:
 
       - name: Dump logs on failure
         if: failure()
-        run: docker compose -f docker-compose.ci.yml logs --no-color
+        run: docker compose -f docker-compose.ci.yml logs --no-color || true
+
       - name: Compose Down (cleanup)
         if: always()
         run: docker compose -f docker-compose.ci.yml down -v
