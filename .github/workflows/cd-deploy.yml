@@ -43,18 +43,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Pull API image (try short sha, fallback run number, with retries)
+      - name: Pull API image (try short sha, then run number; retry ~3 min)
         run: |
           set +e
-          for i in {1..10}; do
-            echo "Try #$i: pull short-sha tag ghcr.io/${OWNER_LC}/taskvault-api:${SHORT_SHA}"
-            docker pull ghcr.io/${OWNER_LC}/taskvault-api:${SHORT_SHA} && \
-              echo "IMAGE_TAG=${SHORT_SHA}" >> $GITHUB_ENV && exit 0
-            echo "Short-sha not ready; try run-number tag ghcr.io/${OWNER_LC}/taskvault-api:${RUN_TAG}"
-            docker pull ghcr.io/${OWNER_LC}/taskvault-api:${RUN_TAG} && \
-              echo "IMAGE_TAG=${RUN_TAG}" >> $GITHUB_ENV && exit 0
-            echo "Not found yet. Waiting 6s…"
-            sleep 6
+          for i in {1..18}; do   # 18 * 10s ≈ 3 Minuten
+          echo "Try #$i: pull short-sha ghcr.io/${OWNER_LC}/taskvault-api:${SHORT_SHA}"
+          docker pull ghcr.io/${OWNER_LC}/taskvault-api:${SHORT_SHA} && \
+          echo "IMAGE_TAG=${SHORT_SHA}" >> $GITHUB_ENV && exit 0
+
+          echo "Not there; try run-number ghcr.io/${OWNER_LC}/taskvault-api:${RUN_TAG}"
+          docker pull ghcr.io/${OWNER_LC}/taskvault-api:${RUN_TAG} && \
+          echo "IMAGE_TAG=${RUN_TAG}" >> $GITHUB_ENV && exit 0
+
+          echo "Still not published. Waiting 10s…"
+          sleep 10
           done
           echo "Image tag not found after retries."
           exit 1
