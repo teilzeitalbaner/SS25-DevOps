@@ -1,5 +1,3 @@
-name: taskvault-ci
-
 services:
   postgres:
     image: postgres:15.3
@@ -8,25 +6,22 @@ services:
       POSTGRES_DB: taskvault_db
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
-      PGDATA: /var/lib/postgresql/data/pgdata
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin -d taskvault_db"]
       interval: 5s
       timeout: 3s
-      retries: 20
+      retries: 10
 
   api:
-    image: ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/taskvault-api:${IMAGE_TAG}
+    image: ghcr.io/${OWNER_LC}/taskvault-api:${IMAGE_TAG}
+    container_name: ci-api
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      RUN_MODE: "PRODUCTION"
-      # PERSISTENCE_UNIT wird im Container vom Storage genutzt:
-      PERSISTENCE_UNIT: "taskvault-unit"
-      # nur informativ, persistence.xml nutzt Hostname 'postgres'
-      DATABASE_URL: "jdbc:postgresql://postgres:5432/taskvault_db"
-      DATABASE_USER: "admin"
-      DATABASE_PASSWORD: "admin"
+      RUN_MODE: PRODUCTION
+      DATABASE_URL: jdbc:postgresql://postgres:5432/taskvault_db
+      DATABASE_USER: admin
+      DATABASE_PASSWORD: admin
     ports:
       - "8080:8080"

@@ -1,5 +1,15 @@
 # SS25-DevOps TaskVault CI/CD
 
+[![CI Build](https://github.com/teilzeitalbaner/SS25-DevOps/actions/workflows/ci-build.yml/badge.svg)](https://github.com/teilzeitalbaner/SS25-DevOps/actions/workflows/ci-build.yml)
+
+## Docker Image (GHCR)
+
+Pull the latest API image:
+
+
+```docker pull ghcr.io/teilzeitalbaner/taskvault-api:latest```
+
+
 ## Commit-Konventionen
 
 Wir nutzen ein verkürztes Conventional-Commits-Schema – *einzeilig, kurz, keine Punkte am Ende*:

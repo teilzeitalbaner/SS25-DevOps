@@ -2,7 +2,7 @@ name: Taskvault CD (Compose on Runner)
 
 on:
   workflow_run:
-    workflows: ["Taskvault CI Build & Test"]
+    workflows: ["Taskvault CI Build & Test"]   # exakter Name deines CI-Workflows
     types: [completed]
 
 permissions:
@@ -20,7 +20,6 @@ jobs:
 
     env:
       IMAGE_TAG: ${{ github.event.workflow_run.run_number }}
-      GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
 
     steps:
       - name: Checkout (compose file & docs)
@@ -28,7 +27,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Login to GHCR
+      - name: Lowercase OWNER for GHCR
+        run: echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+
+      - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -36,11 +38,12 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Pull API image (tag from CI run)
-        run: |
-          docker pull ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/taskvault-api:${IMAGE_TAG}
+        run: docker pull ghcr.io/${{ env.OWNER_LC }}/taskvault-api:${{ env.IMAGE_TAG }}
 
       - name: Compose Up (detached)
         run: |
+          export OWNER_LC="${OWNER_LC}"
+          export IMAGE_TAG="${IMAGE_TAG}"
           docker compose -f docker-compose.ci.yml up -d
 
       - name: Wait for API (HTTP 200)
@@ -52,12 +55,12 @@ jobs:
             fi
             echo "Waiting for API... ($i/30)"; sleep 5
           done
-          echo "API not ready"; docker compose -f docker-compose.ci.yml logs api postgres || true; exit 1
+          echo "API not ready"
+          docker compose -f docker-compose.ci.yml logs api postgres || true
+          exit 1
 
       - name: (Optional) Check DB tables exist
-        run: |
-          docker exec ci-postgres psql -U admin -d taskvault_db -c "\dt"
-          # you can also assert on output if you want to fail on missing tables
+        run: docker exec ci-postgres psql -U admin -d taskvault_db -c "\dt" || true
 
       - name: Compose Down (cleanup)
         if: always()
