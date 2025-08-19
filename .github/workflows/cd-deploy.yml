@@ -16,6 +16,8 @@ jobs:
     defaults:
       run:
         working-directory: java-project/taskvault
+    env:
+      CI_SHA: ${{ github.event.workflow_run.head_sha }}
 
     steps:
       - name: Checkout (compose file & docs)
@@ -23,10 +25,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Export env for compose (lowercase owner + CI run tag)
+      - name: Prepare env (owner lc + short sha)
+        id: meta
         run: |
           echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
-          echo "IMAGE_TAG=${{ github.event.workflow_run.run_number }}" >> $GITHUB_ENV
+          SHORT_SHA="${CI_SHA::7}"
+          echo "IMAGE_TAG=${SHORT_SHA}" >> $GITHUB_ENV
+          echo "Resolved tag: ${SHORT_SHA}"
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -35,12 +40,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # ---- FIX: kein --pull available -> zweistufig
-      - name: Compose pull images
-        run: docker compose -f docker-compose.ci.yml pull
+      - name: Pull API image by short SHA
+        run: docker pull ghcr.io/${OWNER_LC}/taskvault-api:${IMAGE_TAG}
 
       - name: Compose Up (detached)
-        run: docker compose -f docker-compose.ci.yml up -d --no-build
+        run: |
+          export OWNER_LC="${OWNER_LC}"
+          export IMAGE_TAG="${IMAGE_TAG}"
+          docker compose -f docker-compose.ci.yml up -d
 
       - name: Wait for API (HTTP 200)
         run: |
@@ -54,9 +61,6 @@ jobs:
           echo "API not ready"
           docker compose -f docker-compose.ci.yml logs api postgres || true
           exit 1
-
-      - name: (Optional) Check DB tables exist
-        run: docker exec ci-postgres psql -U admin -d taskvault_db -c "\dt" || true
 
       - name: Compose Down (cleanup)
         if: always()
