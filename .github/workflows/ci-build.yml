@@ -6,7 +6,9 @@ on:
   pull_request:
     branches: [main, develop, feature/*]
   workflow_dispatch:
-
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -16,15 +18,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-
       - name: Setup Java 17 (Temurin)
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
-
       - name: Build and Test (Maven)
         run: mvn -B -ntp -DpersistenceUnit=taskvault-unit-test clean verify
       - name: Upload API Test Reports
