@@ -51,6 +51,19 @@ Diese Version ist angepasst für automatisierte Tests und Deployment und wird in
 
 ```docker compose -f docker-compose.ci.yml up -d```
 
+
+## SonarQube
+
+### SonarQube Analyse
+
+Das Projekt ist an SonarQube angebunden und wird bei jedem Pipeline-Lauf vermessen.  
+Die Analyse zeigt u.a. Coverage, Code Smells und Bugs.  
+Wichtiges Kriterium aus der Bewertung ist `Coverage != 0 %`.  
+Dieses Kriterium ist erfüllt (aktuell 29.2 % Coverage).
+
+![SonarQube Overall Coverage](java-project/taskvault/documentation/images/sonarqube_overall.png)
+
+
 ## Workflow-Übersicht
 Alle Workflows liegen unter .github/workflows/.
 
