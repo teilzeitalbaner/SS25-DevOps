@@ -1,11 +1,13 @@
 name: Taskvault CD (Compose on Runner)
 
 on:
-  # ⚠️ WICHTIG: CD startet NACH erfolgreichem Image-Publish
+  # WICHTIG: CD startet ERST NACH erfolgreichem Image-Publish
   workflow_run:
     workflows: ["Publish Docker image (GHCR)"]
     types: [completed]
-
+concurrency:
+  group: deploy-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: true
 permissions:
   contents: read
   packages: read
