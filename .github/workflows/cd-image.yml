@@ -42,17 +42,18 @@ jobs:
       - name: Set tags
         id: tags
         run: |
-          OWNER="${{ github.repository_owner }}"
+          OWNER="${GITHUB_REPOSITORY_OWNER,,}"     # <-- lowercase
           IMAGE="ghcr.io/${OWNER}/taskvault-api"
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "list=${IMAGE}:rc-${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+          echo "list=${IMAGE}:rc-${{ github.run_number }}" >> "$GITHUB_OUTPUT"
           else
-            echo "list=${IMAGE}:latest,${IMAGE}:${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+          echo "list=${IMAGE}:latest,${IMAGE}:${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Build & Push
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: Dockerfile
+          context: ./java-project/taskvault
+          file: ./java-project/taskvault/Dockerfile
           push: true
           tags: ${{ steps.tags.outputs.list }}

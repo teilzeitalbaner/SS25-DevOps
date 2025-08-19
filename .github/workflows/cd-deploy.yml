@@ -40,10 +40,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Kein separater 'docker pull' Step nötig – wir ziehen beim Up
-      - name: Compose Up (detached, always pull latest tag)
-        run: |
-          docker compose --pull always -f docker-compose.ci.yml up -d
+      - name: Compose pull images
+        run: docker compose -f docker-compose.ci.yml pull
+
+      - name: Compose Up (detached)
+        run: docker compose -f docker-compose.ci.yml up -d --no-build
 
       - name: Wait for API (HTTP 200)
         run: |
