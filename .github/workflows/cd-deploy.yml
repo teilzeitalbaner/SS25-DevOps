@@ -1,0 +1,64 @@
+name: Taskvault CD (Compose on Runner)
+
+on:
+  workflow_run:
+    workflows: ["Taskvault CI Build & Test"]
+    types: [completed]
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  deploy-on-runner:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: java-project/taskvault
+
+    env:
+      IMAGE_TAG: ${{ github.event.workflow_run.run_number }}
+      GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+
+    steps:
+      - name: Checkout (compose file & docs)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull API image (tag from CI run)
+        run: |
+          docker pull ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/taskvault-api:${IMAGE_TAG}
+
+      - name: Compose Up (detached)
+        run: |
+          docker compose -f docker-compose.ci.yml up -d
+
+      - name: Wait for API (HTTP 200)
+        run: |
+          for i in {1..30}; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api || true)
+            if [ "$code" = "200" ]; then
+              echo "API is up (HTTP 200)"; exit 0
+            fi
+            echo "Waiting for API... ($i/30)"; sleep 5
+          done
+          echo "API not ready"; docker compose -f docker-compose.ci.yml logs api postgres || true; exit 1
+
+      - name: (Optional) Check DB tables exist
+        run: |
+          docker exec ci-postgres psql -U admin -d taskvault_db -c "\dt"
+          # you can also assert on output if you want to fail on missing tables
+
+      - name: Compose Down (cleanup)
+        if: always()
+        run: docker compose -f docker-compose.ci.yml down -v
