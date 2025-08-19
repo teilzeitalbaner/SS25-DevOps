@@ -1,13 +1,7 @@
 # SS25-DevOps TaskVault CI/CD
+TaskVault ist ein Java-basiertes Projekt mit JPA/Hibernate, PostgreSQL und einer REST-API.
+Dieses Repository enthält zusätzlich eine vollständige CI/CD-Pipeline auf GitHub Actions, inkl. Docker & GHCR Deployment.
 
-[![CI Build](https://github.com/teilzeitalbaner/SS25-DevOps/actions/workflows/ci-build.yml/badge.svg)](https://github.com/teilzeitalbaner/SS25-DevOps/actions/workflows/ci-build.yml)
-
-## Docker Image (GHCR)
-
-Pull the latest API image:
-
-
-```docker pull ghcr.io/teilzeitalbaner/taskvault-api:latest```
 
 
 ## Commit-Konventionen
@@ -28,6 +22,9 @@ Wir nutzen ein verkürztes Conventional-Commits-Schema – *einzeilig, kurz, kei
 - `ci: add ghcr publish job`  
 
 ---
+## Build Status
+[![CI Build](https://github.com/teilzeitalbaner/SS25-DevOps/actions/workflows/ci-build.yml/badge.svg)](https://github.com/teilzeitalbaner/SS25-DevOps/actions/workflows/ci-build.yml)
+
 
 ## Docker Compose Setup
 
@@ -46,8 +43,34 @@ Diese Version ist angepasst für automatisierte Tests und Deployment und wird in
 ```docker compose -f docker-compose.ci.yml up -d```
 
 ## Workflow-Übersicht
+Alle Workflows liegen unter .github/workflows/.
 
-In .github/workflows/ gibt es aktuell drei Workflows:
-- ci-build.yml → führt Build, Tests, Linting & Sonar aus (Continuous Integration)
-- cd-image.yml → baut das API-Docker-Image und pushed es zu GHCR (nur nach erfolgreichem CI)
-- cd-deploy.yml → dient für Deployment (Container starten, später erweiterbar)
+**1. ci-build.yml**
+- Baut das Projekt (Maven)
+- Führt alle Unit-/Integrationstests aus
+- Wird auf jeden Push & PR ausgeführt
+
+**2. cd-image.yml**
+- Baut ein Docker-Image mit der API
+- Push nach GHCR (ghcr.io/teilzeitalbaner/taskvault-api)
+- Tags: latest + GitHub Run Number
+- Startet automatisch, wenn ci-build.yml erfolgreich war
+
+**3. cd-deploy.yml**
+- Zieht das Image aus GHCR
+- Startet per docker-compose.ci.yml auf GitHub Runner
+- Wartet, bis API erreichbar (HTTP 200)
+- Optional: prüft DB-Tabellen
+- Stoppt & cleaned Container danach wieder
+
+## Docker Image (GHCR)
+
+Das aktuellste API-Image ist immer im GitHub Container Registry verfügbar:
+
+```docker pull ghcr.io/teilzeitalbaner/taskvault-api:latest```
+
+Alternative Versionen (z. B. von CI Run Nummern) sind ebenfalls verfügbar.
+
+## Projektstruktur
+
+Bild einfügen
