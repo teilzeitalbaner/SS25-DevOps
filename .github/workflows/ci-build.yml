@@ -128,8 +128,10 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
-          mvn -B -ntp -DpersistenceUnit=taskvault-unit-test verify \
+          mvn -B -ntp -DpersistenceUnit=taskvault-unit-test clean verify \
           org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
           -Dsonar.host.url="${SONAR_HOST_URL}" \
           -Dsonar.projectKey=DevOps-SS25-taskvault \
-          -Dsonar.projectName="DevOps-SS25-taskvault"
+          -Dsonar.projectName="DevOps-SS25-taskvault" \
+          -Dsonar.coverage.jacoco.xmlReportPaths="**/target/site/jacoco/jacoco.xml" \
+          -Dsonar.java.binaries="**/target/classes"
